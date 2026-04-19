@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MealMatrix AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      font-size: 32px;
+    }
+
+    p {
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    .moods {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .mood-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    .mood-btn:hover {
+      background: #ff7e5f;
+      transform: scale(1.05);
+    }
+
+    .custom-input {
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      width: 220px;
+    }
+
+    button.submit {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: none;
+      background: #ff7e5f;
+      color: white;
+      cursor: pointer;
+    }
+
+    .result-container {
+      margin-top: 40px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      width: 150px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .card h3 {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .loading {
+      margin-top: 20px;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🍽️ MealMatrix AI</h1>
+    <p>Choose your mood & get instant food ideas</p>
+  </header>
+
+  <!-- Mood Buttons -->
+  <div class="moods">
+    <button class="mood-btn" onclick="getFood('happy')">😊 Happy</button>
+    <button class="mood-btn" onclick="getFood('sad')">😢 Sad</button>
+    <button class="mood-btn" onclick="getFood('tired')">😴 Tired</button>
+    <button class="mood-btn" onclick="getFood('healthy')">🥗 Healthy</button>
+  </div>
+
+  <!-- Custom Input -->
+  <div class="custom-input">
+    <input id="moodInput" placeholder="Or type your mood..." />
+    <button class="submit" onclick="customMood()">Go</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="loading"></div>
+
+  <!-- Results -->
+  <div id="results" class="result-container"></div>
+
+  <script>
+    const foodImages = {
+      Pizza: "https://source.unsplash.com/200x150/?pizza",
+      Pasta: "https://source.unsplash.com/200x150/?pasta",
+      "Ice Cream": "https://source.unsplash.com/200x150/?ice-cream",
+      Soup: "https://source.unsplash.com/200x150/?soup",
+      Khichdi: "https://source.unsplash.com/200x150/?rice",
+      Tea: "https://source.unsplash.com/200x150/?tea",
+      Sandwich: "https://source.unsplash.com/200x150/?sandwich",
+      Coffee: "https://source.unsplash.com/200x150/?coffee",
+      Maggi: "https://source.unsplash.com/200x150/?noodles",
+      Salad: "https://source.unsplash.com/200x150/?salad",
+      "Fruit Bowl": "https://source.unsplash.com/200x150/?fruits",
+      Smoothie: "https://source.unsplash.com/200x150/?smoothie"
+    };
+
+    async function getFood(mood) {
+      document.getElementById("loading").innerText = "Finding best food for you... 🍴";
+      document.getElementById("results").innerHTML = "";
+
+      try {
+        const res = await fetch("http://localhost:3000/recommend", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ mood })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("loading").innerText = "";
+
+        data.recommendations.forEach(food => {
+          const card = `
+            <div class="card">
+              <img src="${foodImages[food] || 'https://source.unsplash.com/200x150/?food'}"/>
+              <h3>${food}</h3>
+            </div>
+          `;
+          document.getElementById("results").innerHTML += card;
+        });
+
+      } catch {
+        document.getElementById("loading").innerText = "Server error 😢";
+      }
+    }
+
+    function customMood() {
+      const mood = document.getElementById("moodInput").value;
+      if (mood) getFood(mood);
+    }
+  </script>
+
+</body>
+</html>
